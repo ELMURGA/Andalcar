@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disponibilidad de Vehículos | ANDALCAR Rent a Car</title>
+  <meta name="description" content="Consulta la disponibilidad de vehículos de ANDALCAR. Alquiler de coches en Conil de la Frontera, Cádiz y aeropuertos de Andalucía al mejor precio.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/png" href="assets/images/logo-andalcar.png">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .avail-topbar { background: var(--dark); padding: 14px 0; }
+    .avail-topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .avail-back-btn { display: inline-flex; align-items: center; gap: 7px; color: rgba(255,255,255,0.75); font-size: 0.88rem; font-weight: 600; transition: color var(--transition-fast); }
+    .avail-back-btn:hover { color: #FFFFFF; }
+    .avail-logo { height: 36px; width: auto; filter: brightness(0) invert(1); }
+    .avail-trust-pills { display: flex; align-items: center; gap: 14px; }
+    .avail-trust-pill { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; color: rgba(255,255,255,0.65); font-weight: 500; }
+    .avail-trust-pill svg { color: #10B981; }
+    @media (max-width: 600px) { .avail-trust-pills { display: none; } }
+
+    .avail-hero { background: linear-gradient(135deg, var(--dark) 0%, #0A2647 60%, var(--primary) 100%); padding: 28px 0 0; }
+    .avail-search-bar { background: rgba(255,255,255,0.06); backdrop-filter: blur(20px); border-radius: var(--radius-lg); border: 1px solid rgba(255,255,255,0.12); padding: 20px 28px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
+    .search-summary-item { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.88); font-size: 0.88rem; font-weight: 500; }
+    .search-summary-item svg { color: var(--accent); flex-shrink: 0; }
+    .search-summary-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.15); }
+    .search-summary-label { font-size: 0.72rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em; }
+    .search-summary-value { font-size: 0.95rem; font-weight: 700; color: #FFFFFF; }
+    .search-modify-btn { margin-left: auto; background: var(--accent); color: #FFFFFF; padding: 9px 20px; border-radius: var(--radius-full); font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 7px; transition: all var(--transition-fast); white-space: nowrap; }
+    .search-modify-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+    .results-section { padding: 48px 0 80px; background: var(--bg-soft); min-height: 65vh; }
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+    .results-title { font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; color: var(--dark); }
+    .results-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
+    .results-sort { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--text-muted); }
+    .sort-select { padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: #FFFFFF; font-size: 0.88rem; font-weight: 600; color: var(--text-main); cursor: pointer; }
+
+    .filter-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+    .filter-label { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .avail-filter-pill { padding: 7px 16px; border-radius: var(--radius-full); border: 1.5px solid var(--border-color); background: #FFFFFF; font-size: 0.84rem; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all var(--transition-fast); }
+    .avail-filter-pill:hover { border-color: var(--primary); color: var(--primary); background: rgba(5,75,130,0.06); }
+    .avail-filter-pill.active { background: var(--primary); color: #FFFFFF; border-color: var(--primary); }
+
+    .avail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 24px; }
+    .avail-card { background: #FFFFFF; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden; transition: all var(--transition-normal); border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+    .avail-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: rgba(5,75,130,0.18); }
+    .avail-card-image { position: relative; background: linear-gradient(135deg, #F0F4F8 0%, #E8EEF5 100%); padding: 28px 24px 16px; text-align: center; overflow: hidden; }
+    .avail-card-image img { width: 100%; max-height: 140px; object-fit: contain; display: block; margin: 0 auto; transition: transform var(--transition-smooth); }
+    .avail-card:hover .avail-card-image img { transform: scale(1.05); }
+    .avail-badge-cat { position: absolute; top: 12px; left: 12px; background: var(--primary); color: #FFFFFF; font-size: 0.68rem; font-weight: 800; padding: 3px 10px; border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.06em; }
+    .avail-badge-eco { background: #00A896 !important; }
+    .avail-badge-popular { position: absolute; top: 12px; right: 12px; background: var(--accent); color: #FFFFFF; font-size: 0.66rem; font-weight: 800; padding: 3px 10px; border-radius: var(--radius-full); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .avail-card-body { padding: 20px 22px 18px; flex: 1; display: flex; flex-direction: column; }
+    .avail-car-name { font-family: var(--font-heading); font-size: 1.05rem; font-weight: 800; color: var(--dark); margin-bottom: 3px; }
+    .avail-car-group { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; margin-bottom: 14px; }
+    .avail-features { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .avail-feature { display: flex; align-items: center; gap: 5px; font-size: 0.79rem; color: var(--text-muted); font-weight: 500; }
+    .avail-feature svg { color: var(--primary); }
+
+    .avail-includes { background: var(--bg-soft); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px; }
+    .avail-includes-title { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 7px; }
+    .avail-includes-list { display: flex; flex-direction: column; gap: 5px; }
+    .avail-include-item { display: flex; align-items: center; gap: 7px; font-size: 0.8rem; color: var(--text-main); }
+    .avail-include-item svg { color: #10B981; flex-shrink: 0; }
+
+    .avail-price-row { display: flex; align-items: flex-end; justify-content: space-between; margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border-color); }
+    .price-from { font-size: 0.72rem; color: var(--text-muted); font-weight: 500; }
+    .price-amount { font-family: var(--font-heading); font-size: 1.7rem; font-weight: 800; color: var(--primary); line-height: 1; }
+    .price-unit { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+    .avail-reserve-btn { background: linear-gradient(135deg, var(--accent) 0%, #FF8533 100%); color: #FFFFFF; padding: 11px 20px; border-radius: var(--radius-full); font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px; transition: all var(--transition-fast); box-shadow: var(--shadow-accent); white-space: nowrap; cursor: pointer; border: none; font-family: var(--font-sans); }
+    .avail-reserve-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(255,107,0,0.4); }
+
+    .skeleton-card { background: #FFFFFF; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); }
+    .skeleton-shimmer { background: linear-gradient(90deg,#F1F5F9 25%,#E8EEF5 50%,#F1F5F9 75%); background-size: 200% 100%; animation: shimmer 1.6s infinite; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .skeleton-img { height: 170px; }
+    .skeleton-body { padding: 20px 22px; }
+    .skeleton-line { height: 12px; border-radius: 6px; margin-bottom: 12px; }
+    .skeleton-line.wide{width:75%} .skeleton-line.medium{width:50%} .skeleton-line.short{width:35%} .skeleton-line.full{width:100%}
+
+    .info-notice { background: linear-gradient(135deg, rgba(5,75,130,0.07) 0%, rgba(10,105,183,0.04) 100%); border: 1px solid rgba(5,75,130,0.18); border-radius: var(--radius-md); padding: 18px 22px; display: flex; align-items: flex-start; gap: 14px; margin-bottom: 32px; }
+    .info-notice svg { color: var(--primary); flex-shrink: 0; margin-top: 2px; }
+    .info-notice-text { font-size: 0.88rem; color: var(--text-main); line-height: 1.6; }
+    .info-notice-text strong { color: var(--primary); }
+
+    .avail-promo-strip { background: linear-gradient(135deg, var(--accent) 0%, #FF8533 100%); border-radius: var(--radius-md); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; box-shadow: var(--shadow-accent); }
+    .avail-promo-text { color: #FFFFFF; font-weight: 700; font-size: 0.95rem; }
+    .avail-promo-text span { opacity: 0.85; font-weight: 500; font-size: 0.82rem; }
+
+    .avail-cta { background: linear-gradient(135deg, var(--dark) 0%, var(--primary-dark) 100%); border-radius: var(--radius-lg); padding: 44px 40px; text-align: center; margin-top: 48px; }
+    .avail-cta h2 { font-family: var(--font-heading); font-size: 1.7rem; font-weight: 800; color: #FFFFFF; margin-bottom: 12px; }
+    .avail-cta p { color: rgba(255,255,255,0.7); font-size: 0.95rem; margin-bottom: 26px; }
+    .avail-cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+    @media (max-width: 768px) {
+      .avail-search-bar { padding: 16px; gap: 10px; }
+      .search-modify-btn { margin-left: 0; width: 100%; justify-content: center; }
+      .results-header { flex-direction: column; align-items: flex-start; }
+      .avail-grid { grid-template-columns: 1fr; }
+      .avail-cta { padding: 32px 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <div class="avail-topbar">
+    <div class="container">
+      <div class="avail-topbar-inner">
+        <a href="index.html" class="avail-back-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          Volver al inicio
+        </a>
+        <a href="index.html">
+          <img src="assets/images/logo-andalcar.png" alt="ANDALCAR" class="avail-logo">
+        </a>
+        <div class="avail-trust-pills">
+          <span class="avail-trust-pill">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Mejor Precio Garantizado
+          </span>
+          <span class="avail-trust-pill">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Cancelación gratuita 48h
+          </span>
+          <span class="avail-trust-pill">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Sin cargos ocultos
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Summary -->
+  <div class="avail-hero">
+    <div class="container">
+      <div class="avail-search-bar">
+        <div class="search-summary-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <div>
+            <div class="search-summary-label">Recogida</div>
+            <div class="search-summary-value" id="summPickup">—</div>
+          </div>
+        </div>
+        <div class="search-summary-divider"></div>
+        <div class="search-summary-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <div>
+            <div class="search-summary-label">Fechas</div>
+            <div class="search-summary-value" id="summDates">—</div>
+          </div>
+        </div>
+        <div class="search-summary-divider"></div>
+        <div class="search-summary-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <div>
+            <div class="search-summary-label">Duración</div>
+            <div class="search-summary-value" id="summDuration">—</div>
+          </div>
+        </div>
+        <a href="index.html#buscador" class="search-modify-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          Modificar búsqueda
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <section class="results-section">
+    <div class="container">
+      <div class="info-notice">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <div class="info-notice-text">Precios mostrados <strong>por día</strong>, impuestos incluidos. Al pulsar "Reservar" accederás al motor de reservas oficial de ANDALCAR para completar tu reserva de forma 100% segura. <strong>Cancelación gratuita</strong> hasta 48 horas antes.</div>
+      </div>
+
+      <div class="avail-promo-strip">
+        <div>
+          <div class="avail-promo-text">🏷️ ¡Reserva anticipada: hasta 35% de descuento!</div>
+          <div class="avail-promo-text"><span>Código <strong>ANDALCAR35</strong> al finalizar la reserva. Oferta limitada a disponibilidad.</span></div>
+        </div>
+        <a href="https://wa.me/34611722501?text=Hola%2C%20quiero%20el%20descuento%20anticipado" target="_blank" rel="noopener" class="btn btn-white btn-sm" style="flex-shrink:0;">Consultar oferta</a>
+      </div>
+
+      <div class="results-header">
+        <div>
+          <div class="results-title" id="resultsTitle">Vehículos disponibles</div>
+          <div class="results-subtitle" id="resultsSubtitle">Cargando resultados...</div>
+        </div>
+        <div class="results-sort">
+          <label for="sortSelect" style="font-size:0.84rem;font-weight:600;color:var(--text-muted);">Ordenar:</label>
+          <select class="sort-select" id="sortSelect">
+            <option value="price-asc">Precio: menor a mayor</option>
+            <option value="price-desc">Precio: mayor a menor</option>
+            <option value="category">Por categoría</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <span class="filter-label">Filtrar:</span>
+        <button class="avail-filter-pill active" data-cat="all">Todos</button>
+        <button class="avail-filter-pill" data-cat="economy">Económicos</button>
+        <button class="avail-filter-pill" data-cat="suv">SUVs</button>
+        <button class="avail-filter-pill" data-cat="family">Familiares</button>
+        <button class="avail-filter-pill" data-cat="eco">Híbridos/ECO</button>
+        <button class="avail-filter-pill" data-cat="cabrio">Descapotables</button>
+        <button class="avail-filter-pill" data-cat="van">Furgonetas</button>
+      </div>
+
+      <div class="avail-grid" id="availGrid">
+        <div class="skeleton-card"><div class="skeleton-shimmer skeleton-img"></div><div class="skeleton-body"><div class="skeleton-shimmer skeleton-line wide"></div><div class="skeleton-shimmer skeleton-line medium"></div><div class="skeleton-shimmer skeleton-line full"></div><div class="skeleton-shimmer skeleton-line short"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-shimmer skeleton-img"></div><div class="skeleton-body"><div class="skeleton-shimmer skeleton-line wide"></div><div class="skeleton-shimmer skeleton-line medium"></div><div class="skeleton-shimmer skeleton-line full"></div><div class="skeleton-shimmer skeleton-line short"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-shimmer skeleton-img"></div><div class="skeleton-body"><div class="skeleton-shimmer skeleton-line wide"></div><div class="skeleton-shimmer skeleton-line medium"></div><div class="skeleton-shimmer skeleton-line full"></div><div class="skeleton-shimmer skeleton-line short"></div></div></div>
+      </div>
+
+      <div class="avail-cta">
+        <h2>¿No encuentras lo que buscas?</h2>
+        <p>Nuestro equipo te ayuda a encontrar el vehículo perfecto para tu viaje.</p>
+        <div class="avail-cta-buttons">
+          <a href="tel:+34611722501" class="btn btn-primary btn-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            Llamar: +34 611 72 25 01
+          </a>
+          <a href="https://wa.me/34611722501?text=Hola%2C%20necesito%20ayuda%20con%20disponibilidad" target="_blank" rel="noopener" class="btn btn-whatsapp btn-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+            WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer style="background:var(--dark);padding:28px 0;text-align:center;">
+    <div class="container">
+      <a href="index.html"><img src="assets/images/logo-andalcar.png" alt="ANDALCAR" style="height:36px;filter:brightness(0) invert(1);margin:0 auto 14px;"></a>
+      <p style="color:rgba(255,255,255,0.45);font-size:0.82rem;">© 2026 ANDALCAR Rent a Car · Conil de la Frontera, Cádiz &nbsp;|&nbsp; <a href="tel:+34611722501" style="color:var(--accent);">+34 611 72 25 01</a></p>
+    </div>
+  </footer>
+
+  <div class="floating-actions-dock">
+    <a href="https://wa.me/34611722501" target="_blank" rel="noopener" class="fab-btn fab-whatsapp" aria-label="WhatsApp">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+      <span class="fab-tooltip">Chat WhatsApp</span>
+    </a>
+    <a href="tel:+34611722501" class="fab-btn fab-phone" aria-label="Llamar">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+      <span class="fab-tooltip">+34 611 72 25 01</span>
+    </a>
+  </div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const oevtxt = urlParams.get('oevtxt') || 'Conil de la Frontera';
+const f1     = urlParams.get('f1') || '';
+const f2     = urlParams.get('f2') || '';
+const h1     = urlParams.get('h1') || '10:00';
+const h2     = urlParams.get('h2') || '10:00';
+const f1_raw = urlParams.get('f1_raw') || '';
+const f2_raw = urlParams.get('f2_raw') || '';
+const edad   = urlParams.get('edad') || '25';
+const oev    = urlParams.get('oev') || '1';
+const orv    = urlParams.get('orv') || oev;
+const orvtxt = urlParams.get('orvtxt') || oevtxt;
+const tipoV  = urlParams.get('tipovehiculo') || '';
+const promo  = urlParams.get('promo') || '';
+
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = new Date(s + 'T12:00:00');
+  return d.toLocaleDateString('es-ES', {day:'2-digit', month:'short', year:'numeric'});
+}
+
+function daysBetween(d1, d2) {
+  if (!d1 || !d2) return 3;
+  const a = new Date(d1 + 'T12:00:00');
+  const b = new Date(d2 + 'T12:00:00');
+  return Math.max(1, Math.round((b - a) / 86400000));
+}
+
+const days = daysBetween(f1_raw, f2_raw);
+
+document.getElementById('summPickup').textContent   = oevtxt.replace(/\s*\(.*\)/, '');
+document.getElementById('summDates').textContent    = fmtDate(f1_raw) + ' · ' + h1 + ' → ' + fmtDate(f2_raw) + ' · ' + h2;
+document.getElementById('summDuration').textContent = days + ' día' + (days !== 1 ? 's' : '');
+
+function submitToEngine(vehicleName, vehicleGroup) {
+  const form = document.createElement('form');
+  form.action = 'https://reservas.andalcar.com/vehiculos.php';
+  form.method = 'POST';
+  form.target = '_blank';
+  const fields = { oev, oevtxt, f1, h1, orv, orvtxt, f2, h2, afiliado:'0', idioma:'es', edad, promo, grupo:'', tipovehiculo:vehicleGroup, nombrevehiculo:vehicleName, color_afiliado:'', emp:'andalcar' };
+  Object.entries(fields).forEach(([k,v]) => { const i=document.createElement('input'); i.type='hidden'; i.name=k; i.value=v; form.appendChild(i); });
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+}
+
+const fleet = [
+  { id:'eco1', name:'Seat Ibiza / Similar', group:'Turismo Económico', cat:'economy', img:'assets/images/car_compact_economy.jpg', seats:5, doors:4, trans:'Manual', ac:true, priceFrom: days>6?19:24, popular:true, badge:'Económico', badgeEco:false, includes:['Seguro básico incluido','Kilometraje ilimitado','Segunda llave incluida'] },
+  { id:'suv1', name:'Nissan Qashqai / Similar', group:'SUV Mediano', cat:'suv', img:'assets/images/car_family_suv.jpg', seats:5, doors:5, trans:'Automático', ac:true, priceFrom: days>6?38:48, popular:false, badge:'SUV', badgeEco:false, includes:['Seguro básico incluido','Kilometraje ilimitado','GPS incluido'] },
+  { id:'eco2', name:'Toyota Yaris Hybrid / Similar', group:'Híbrido ECO', cat:'eco', img:'assets/images/car_hybrid_eco.jpg', seats:5, doors:5, trans:'Automático', ac:true, priceFrom: days>6?32:41, popular:false, badge:'ECO Híbrido', badgeEco:true, includes:['Seguro básico incluido','Km ilimitado','Cero emisiones en ciudad'] },
+  { id:'cab1', name:'Mazda MX-5 Cabrio / Similar', group:'Descapotable', cat:'cabrio', img:'assets/images/car_cabrio_beach.jpg', seats:2, doors:2, trans:'Manual', ac:true, priceFrom: days>6?55:70, popular:false, badge:'Descapotable', badgeEco:false, includes:['Seguro básico incluido','Km ilimitado','Techo automático'] },
+  { id:'fam1', name:'VW Tiguan 7 Plazas / Similar', group:'SUV Familiar Grande', cat:'family', img:'assets/images/car_family_suv.jpg', seats:7, doors:5, trans:'Automático', ac:true, priceFrom: days>6?48:62, popular:false, badge:'Familiar', badgeEco:false, includes:['Seguro básico incluido','Km ilimitado','Portabicicletas opcional'] },
+  { id:'van1', name:'Mercedes Vito 9 Plazas / Similar', group:'Furgoneta 9 Plazas', cat:'van', img:'assets/images/car_minivan_group.jpg', seats:9, doors:5, trans:'Manual', ac:true, priceFrom: days>6?65:85, popular:false, badge:'Furgoneta', badgeEco:false, includes:['Seguro básico incluido','Km ilimitado','Ideal para grupos'] }
+];
+
+let activeFilter = 'all';
+if (tipoV==='1') activeFilter='economy';
+else if (tipoV==='2') activeFilter='suv';
+else if (tipoV==='3') activeFilter='van';
+else if (tipoV==='4') activeFilter='cabrio';
+else if (tipoV==='5') activeFilter='eco';
+
+function renderCards(filter, sortMode) {
+  const grid = document.getElementById('availGrid');
+  let cars = filter === 'all' ? [...fleet] : fleet.filter(c => c.cat === filter);
+  if (sortMode === 'price-desc') cars.sort((a,b) => b.priceFrom - a.priceFrom);
+  else if (sortMode === 'price-asc') cars.sort((a,b) => a.priceFrom - b.priceFrom);
+  else cars.sort((a,b) => a.cat.localeCompare(b.cat));
+
+  const minP = cars.length ? Math.min(...cars.map(c=>c.priceFrom)) : 0;
+  document.getElementById('resultsTitle').textContent = cars.length + ' vehículo' + (cars.length!==1?'s':'') + ' disponible' + (cars.length!==1?'s':'');
+  document.getElementById('resultsSubtitle').textContent = 'Para ' + days + ' día' + (days!==1?'s':'') + (cars.length?' · Desde ' + minP + '€/día':'');
+
+  if (!cars.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;"><p style="font-size:1.1rem;font-weight:700;color:var(--text-main);margin-bottom:8px;">No hay vehículos en esta categoría</p><p style="color:var(--text-muted);font-size:0.9rem;">Prueba otra categoría o llámanos.</p></div>';
+    return;
+  }
+
+  grid.innerHTML = cars.map(car => `
+    <div class="avail-card" data-cat="${car.cat}">
+      <div class="avail-card-image">
+        <span class="avail-badge-cat${car.badgeEco?' avail-badge-eco':''}">${car.badge}</span>
+        ${car.popular ? '<span class="avail-badge-popular">⭐ Más popular</span>' : ''}
+        <img src="${car.img}" alt="${car.name}" loading="lazy">
+      </div>
+      <div class="avail-card-body">
+        <div class="avail-car-name">${car.name}</div>
+        <div class="avail-car-group">${car.group}</div>
+        <div class="avail-features">
+          <span class="avail-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>${car.seats} plazas</span>
+          <span class="avail-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>${car.doors} puertas</span>
+          <span class="avail-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"></path></svg>${car.trans}</span>
+          ${car.ac ? '<span class="avail-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 10h8M8 14h8"></path><rect x="3" y="6" width="18" height="12" rx="2"></rect></svg>A/C</span>' : ''}
+        </div>
+        <div class="avail-includes">
+          <div class="avail-includes-title">Incluido</div>
+          <div class="avail-includes-list">
+            ${car.includes.map(inc=>`<div class="avail-include-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>${inc}</div>`).join('')}
+          </div>
+        </div>
+        <div class="avail-price-row">
+          <div class="avail-price-block">
+            <div class="price-from">Desde</div>
+            <div class="price-amount">${car.priceFrom}€ <span class="price-unit">/ día</span></div>
+            ${days>1?`<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">Total ${days} días: <strong style="color:var(--primary);">${car.priceFrom*days}€</strong></div>`:''}
+          </div>
+          <button class="avail-reserve-btn" onclick="submitToEngine('${car.name.replace(/'/g,"\\'")}', '${car.cat}')">
+            Reservar
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function initFilters() {
+  const pills = document.querySelectorAll('.avail-filter-pill');
+  pills.forEach(p => p.classList.toggle('active', p.dataset.cat === activeFilter));
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      pills.forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      activeFilter = pill.dataset.cat;
+      renderCards(activeFilter, document.getElementById('sortSelect').value);
+    });
+  });
+  document.getElementById('sortSelect').addEventListener('change', e => renderCards(activeFilter, e.target.value));
+}
+
+setTimeout(() => {
+  renderCards(activeFilter, 'price-asc');
+  initFilters();
+}, 1100);
+</script>
+</body>
+</html>
